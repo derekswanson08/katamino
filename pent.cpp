@@ -3,9 +3,8 @@
 
 using namespace std;
 
-const char BLANK = '.';
-const char OVERLAP = '$';
-const int LEVEL = 8;
+static const char BLANK = '.';
+static const char OVERLAP = '$';
 
 Pent::Pent(int h, int w) :
         m_height(h),
@@ -44,8 +43,6 @@ bool contains(const std::vector<std::shared_ptr<Pent>>& v, std::shared_ptr<Pent>
     return false;
 }
 
-
-
 std::vector<std::shared_ptr<Pent>> removeDuplicates(const std::vector<std::shared_ptr<Pent>>& x)
 {
     std::vector<std::shared_ptr<Pent>> r;
@@ -56,47 +53,6 @@ std::vector<std::shared_ptr<Pent>> removeDuplicates(const std::vector<std::share
             r.push_back(p);
         }
     }
-    return r;
-}
-
-vector<shared_ptr<Pent>> Pent::conv(const Pent& src1, const Pent& src2)
-{
-    vector<shared_ptr<Pent>> r;
-
-    auto list1 = src1.allRotations();
-    auto list2 = src2.allRotations();
-
-    for(auto r1 : list1)
-    {
-        for(auto r2 : list2)
-        {
-            // Pad r1 such that r2 can fit on all four sides
-            Pent p1(r1->m_height + 2*r2->m_height, r1->m_width + 2*r2->m_width);
-            copy(p1, *r1, r2->m_width, r2->m_height);
-
-            for(int y = 0; y <= (p1.m_height - r2->m_height); y++)
-            {
-                for(int x = 0; x <= (p1.m_width - r2->m_width); x++)
-                {
-                    // Copy r2 to the offset
-                    Pent p2(p1.m_height, p1.m_width);
-                    copy(p2, *r2, x, y);
-                    auto p3 = make_shared<Pent>();
-                    *p3 = add(p1, p2);
-                    p3->trim();
-                    if(p3->isLegal())
-                    {
-                        r.push_back(p3);
-                    }
-                }
-            }
-        }
-    }
-
-    r = removeDuplicates(r);
-    std::sort(r.begin(),r.end(),[](shared_ptr<Pent> a, shared_ptr<Pent> b) {
-        return a->size() < b->size();
-    });
     return r;
 }
 
@@ -118,32 +74,6 @@ void Pent::copy(Pent& dst, const Pent& src, int xOffset, int yOffset)
         }
     }
 }
-
-Pent Pent::trim(const Pent& src)
-{
-    int min_x = src.m_width-1;
-    int min_y = src.m_height-1;
-    int max_x = 0;
-    int max_y = 0;
-    for(int y = 0; y < src.m_height; y++)
-    {
-        for(int x = 0; x < src.m_width; x++)
-        {
-            if(src.at(x,y) != BLANK)
-            {
-                min_x = std::min(min_x, x);
-                max_x = std::max(max_x, x);
-                min_y = std::min(min_y, y);
-                max_y = std::max(max_y, y);
-            }
-        }
-    }
-    int height = max_y - min_y + 1;
-    int width = max_x - min_x + 1;
-    Pent r = crop(src, height, width, min_x, min_y);
-    return r;
-}
-
 
 Pent Pent::add(const Pent& src1, const Pent& src2)
 {
@@ -230,11 +160,6 @@ Pent Pent::add(const Pent& board, const Pent& pent, int xOffset, int yOffset)
     return r;
 }
 
-void Pent::trim(void)
-{
-    *this = trim(*this);
-}
-
 char& Pent::at(int x, int y)
 {
     assert((0 <= x) && (x < m_width));
@@ -249,20 +174,15 @@ const char& Pent::at(int x, int y) const
     return m_data[(y * m_width) + x];
 }
 
-std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board, bool verbose)
+std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board)
 {
     if(list.size() > 0)
     {
         Pent pentToPlace = list.back();
         list.pop_back();
         auto rotations = pentToPlace.allRotations();
-        for(size_t ii = 0; ii < rotations.size(); ii++)
+        for(std::shared_ptr<Pent> p : rotations)
         {
-            std::shared_ptr<Pent> p = rotations[ii];
-            if(verbose)
-            {
-                printf("%lu/%lu\n", ii, rotations.size());
-            }
             for(int x = 0; x <= (board.width() - p->width()); x++)
             {
                 for(int y = 0; y <= (board.height() - p->height()); y++)
@@ -270,7 +190,7 @@ std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board, bool verbose)
                     Pent newBoard = Pent::add(board, *p, x, y);
                     if(newBoard.isLegal())
                     {
-                        auto solution = solve(list, newBoard, false);
+                        auto solution = solve(list, newBoard);
                         if(solution != nullptr)
                         {
                             return solution;
@@ -282,12 +202,6 @@ std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board, bool verbose)
     }
     else
     {
-        printf("=========================\n");
-        printf("=========================\n");
-        printf("=== solved it!!! ========\n");
-        board.print();
-        printf("=========================\n");
-        printf("=========================\n");
         return std::make_shared<Pent>(board);
     }
     return nullptr;
@@ -366,50 +280,16 @@ int main(void)
 //    k.emplace_back(1,5);
 //    k.back().setString(
 //        "bbbbb");
-    
-#if 0
-    printf("---k[0]--\n");
-    k[0].print();
-    printf("\n");
-
-    printf("---k[1]--\n");
-    k[1].print();
-    printf("\n");
-
-    auto list = Pent::conv(k[0],k[1]);
-    for(auto p : list)
-    {
-        printf("---------\n");
-        p->print();
-        printf("\n");
-    }
-    printf("total = %lu\n",list.size());
-#endif
 
     Pent board(5, k.size());
-    solve(k, board, false);
+    auto solution = solve(k, board);
 
-}
-
-
-void Pent::crop(int height, int width, int xOffset, int yOffset)
-{
-    *this = crop(*this, height, width, xOffset, yOffset);
-}
-
-Pent Pent::crop(const Pent& src, int height, int width, int xOffset, int yOffset)
-{
-    assert((height+yOffset) <= src.m_height);
-    assert((width+xOffset) <= src.m_width);
-    Pent r(height, width);
-    for(int y = 0; y < height; y++)
-    {
-        for(int x = 0; x < width; x++)
-        {
-            r.at(x,y) = src.at(x+xOffset, y+yOffset);
-        }
-    }
-    return r;
+    printf("=========================\n");
+    printf("=========================\n");
+    printf("=== solved it!!! ========\n");
+    solution->print();
+    printf("=========================\n");
+    printf("=========================\n");
 }
 
 std::vector<std::shared_ptr<Pent>> Pent::allRotations(void) const
@@ -447,15 +327,6 @@ void Pent::rotate(void)
 {
     *this = rotate(*this);
 }
-
-// 012   630
-// 345   741
-// 678   852
-
-// 0123  840
-// 4567  951
-// 89ab  a62
-//       b73
 
 Pent Pent::rotate(const Pent& src)
 {
