@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+class Runner;
+
 class Pent
 {
     public:
@@ -28,12 +30,14 @@ class Pent
         static Pent fliplr(const Pent& src);
         static Pent flipud(const Pent& src);
 
+        static std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board, Runner* runner);
+
         bool operator==(const Pent& rhs) const;
         bool operator!=(const Pent& rhs) const { return !(*this == rhs); }
 
-        int size() { return m_height * m_width; }
-        int width() { return m_width; }
-        int height() { return m_height; }
+        int size() const { return m_height * m_width; }
+        int width() const { return m_width; }
+        int height() const { return m_height; }
     
     private:
         std::string m_data;

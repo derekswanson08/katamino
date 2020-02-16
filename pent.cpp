@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <QThread>
 #include "pent.h"
+#include "runner.h"
 
 using namespace std;
 
@@ -174,7 +176,7 @@ const char& Pent::at(int x, int y) const
     return m_data[(y * m_width) + x];
 }
 
-std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board)
+std::shared_ptr<Pent> Pent::solve(std::vector<Pent> list, Pent board, Runner* runner)
 {
     if(list.size() > 0)
     {
@@ -190,7 +192,9 @@ std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board)
                     Pent newBoard = Pent::add(board, *p, x, y);
                     if(newBoard.isLegal())
                     {
-                        auto solution = solve(list, newBoard);
+                        //QThread::msleep(1);
+                        runner->update(newBoard, false);
+                        auto solution = solve(list, newBoard, runner);
                         if(solution != nullptr)
                         {
                             return solution;
@@ -207,90 +211,6 @@ std::shared_ptr<Pent> solve(std::vector<Pent> list, Pent board)
     return nullptr;
 }
 
-int main(void)
-{
-    vector<Pent> k;
-    k.emplace_back(4,2);
-    k.back().setString(
-        "0."
-        "0."
-        "0."
-        "00");
-
-    k.emplace_back(4,2);
-    k.back().setString(
-        ".1"
-        ".1"
-        "11"
-        "1.");
-
-    k.emplace_back(3,2);
-    k.back().setString(
-        "22"
-        "22"
-        "2.");
-
-    k.emplace_back(3,3);
-    k.back().setString(
-        "33."
-        ".3."
-        ".33");
-
-    k.emplace_back(3,3);
-    k.back().setString(
-        "444"
-        ".4."
-        ".4.");
-
-//    k.emplace_back(4,2);
-//    k.back().setString(
-//        ".5"
-//        "55"
-//        ".5"
-//        ".5");
-
-    k.emplace_back(3,3);
-    k.back().setString(
-        "..6"
-        "..6"
-        "666");
-
-    k.emplace_back(2,3);
-    k.back().setString(
-        "7.7"
-        "777");
-
-    k.emplace_back(3,3);
-    k.back().setString(
-        ".88"
-        "88."
-        ".8.");
-
-//    k.emplace_back(3,3);
-//    k.back().setString(
-//        "..9"
-//        ".99"
-//        "99.");
-//
-//    k.emplace_back(3,3);
-//    k.back().setString(
-//        ".a."
-//        "aaa"
-//        ".a.");
-//    k.emplace_back(1,5);
-//    k.back().setString(
-//        "bbbbb");
-
-    Pent board(5, k.size());
-    auto solution = solve(k, board);
-
-    printf("=========================\n");
-    printf("=========================\n");
-    printf("=== solved it!!! ========\n");
-    solution->print();
-    printf("=========================\n");
-    printf("=========================\n");
-}
 
 std::vector<std::shared_ptr<Pent>> Pent::allRotations(void) const
 {
