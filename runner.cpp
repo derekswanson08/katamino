@@ -2,7 +2,6 @@
 #include <QColor>
 #include <QMap>
 #include <QVector>
-#include <QDebug>
 #include "runner.h"
 #include "pent.h"
 
@@ -15,7 +14,6 @@ Runner::Runner(QObject *)
 
 void Runner::onRunSolver()
 {
-    qDebug() << __FUNCTION__;
     vector<Pent> k;
     k.emplace_back(4,2);
     k.back().setString(
@@ -49,12 +47,12 @@ void Runner::onRunSolver()
         ".4."
         ".4.");
 
-//    k.emplace_back(4,2);
-//    k.back().setString(
-//        ".5"
-//        "55"
-//        ".5"
-//        ".5");
+    k.emplace_back(4,2);
+    k.back().setString(
+        ".5"
+        "55"
+        ".5"
+        ".5");
 
     k.emplace_back(3,3);
     k.back().setString(
@@ -91,14 +89,17 @@ void Runner::onRunSolver()
     Pent board(5, (int) k.size());
     auto solution = Pent::solve(k, board, this);
 
-    printf("=========================\n");
-    printf("=========================\n");
-    printf("=== solved it!!! ========\n");
-    solution->print();
-    printf("=========================\n");
-    printf("=========================\n");
-    
-    update(*solution, true);
+    if(solution)
+    {
+        printf("=========================\n");
+        printf("=========================\n");
+        printf("=== solved it!!! ========\n");
+        solution->print();
+        printf("=========================\n");
+        printf("=========================\n");
+
+        update(*solution, true);
+    }
 }
 
 void Runner::update(const Pent& board, bool force)
@@ -135,7 +136,6 @@ void Runner::update(const Pent& board, bool force)
             colors.append(lut.value(board.at(x,y)));
         }
     }
-    qDebug() << "emit updateModel(colors)";
     emit updateModel(colors);
 
     m_timer.start();

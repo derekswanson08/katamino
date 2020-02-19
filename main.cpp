@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QThread>
 #include "boardmodel.h"
+#include "board.h"
 #include "runner.h"
 
 int main(int argc, char *argv[])
@@ -15,8 +16,11 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<QVector<QColor>>();
 
+    qmlRegisterType<BoardModel>("com.swans.BoardModel",1,0,"BoardModel");
+    qmlRegisterUncreatableType<Board>("com.swans.BoardModel",1,0,"Board","Board should not be created in QML");
+
     // add global c++ object to the QML context as a property
-    BoardModel myBoard;
+    Board myBoard;
     engine.rootContext()->setContextProperty("myBoard", &myBoard);
 
     QThread worker;
@@ -33,7 +37,9 @@ int main(int argc, char *argv[])
 
 
     int status = app.exec();
+    runner.quit = true;
     worker.quit();
+    worker.wait(1000);
 
     return status;
 }

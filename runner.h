@@ -13,6 +13,7 @@ class Runner : public QObject
 public:
     explicit Runner(QObject *parent = nullptr);
     void update(const Pent& p, bool force);
+    bool quit = false;
 
 signals:
     void updateModel(QVector<QColor>);

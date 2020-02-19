@@ -178,6 +178,11 @@ const char& Pent::at(int x, int y) const
 
 std::shared_ptr<Pent> Pent::solve(std::vector<Pent> list, Pent board, Runner* runner)
 {
+    if(runner->quit)
+    {
+        return nullptr;
+    }
+
     if(list.size() > 0)
     {
         Pent pentToPlace = list.back();

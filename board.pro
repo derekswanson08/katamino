@@ -16,7 +16,8 @@ SOURCES += \
         main.cpp \
     boardmodel.cpp \
     pent.cpp \
-    runner.cpp
+    runner.cpp \
+    board.cpp
 
 RESOURCES += qml.qrc
 
@@ -34,4 +35,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     boardmodel.h \
     pent.h \
-    runner.h
+    runner.h \
+    board.h
