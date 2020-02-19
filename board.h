@@ -8,7 +8,7 @@
 class Board : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int level READ level)
+    Q_PROPERTY(int level READ level NOTIFY levelChanged)
 
 public:
     explicit Board(QObject *parent = nullptr);
@@ -23,6 +23,7 @@ signals:
     void postSetColors();
     void runSolver();
     void dataChanged(int size);
+    void levelChanged();
 
 public slots:
     void solve();
